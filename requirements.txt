@@ -1,0 +1,1 @@
+Flask>=3.0,<4\ngunicorn>=21.2,<24\nnumpy<2\nopencv-python-headless>=4.8\n
