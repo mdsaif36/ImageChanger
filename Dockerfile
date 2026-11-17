@@ -19,6 +19,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
@@ -28,8 +29,11 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 COPY app.py ./
 COPY models/ ./models/
 
-# Verify actual AI model binary is present
-RUN python -c "from pathlib import Path; p=Path('models/colorization_release_v2.caffemodel'); assert p.stat().st_size > 100_000_000, 'Model file is missing or is an LFS pointer'"
+# Download actual pretrained AI model
+RUN python -c "import urllib.request; urllib.request.urlretrieve('https://huggingface.co/spaces/BilalSardar/Black-N-White-To-Color/resolve/main/colorization_release_v2.caffemodel', 'models/colorization_release_v2.caffemodel')"
+
+# Verify downloaded model
+RUN python -c "import hashlib; from pathlib import Path; p=Path('models/colorization_release_v2.caffemodel'); h=hashlib.sha256(p.read_bytes()).hexdigest(); assert p.stat().st_size > 100_000_000 and h == 'f5af1e602646328c792e1094f9876fe9cd4c09ac46fa886e5708a1abc89137b1', 'Model download failed or checksum mismatch'; print('AI model verified successfully')"
 
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
