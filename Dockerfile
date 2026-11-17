@@ -28,6 +28,9 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 COPY app.py ./
 COPY models/ ./models/
 
+# Verify actual AI model binary is present
+RUN python -c "from pathlib import Path; p=Path('models/colorization_release_v2.caffemodel'); assert p.stat().st_size > 100_000_000, 'Model file is missing or is an LFS pointer'"
+
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
 ENV PYTHONUNBUFFERED=1
